@@ -10,8 +10,7 @@ RUN npm install --omit=dev
 
 COPY src/ ./src/
 
-# Volume untuk persist session WhatsApp
-VOLUME ["/app/session"]
+RUN mkdir -p /app/session
 
 ENV PORT=3001
 ENV SESSION_PATH=/app/session
