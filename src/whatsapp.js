@@ -15,6 +15,17 @@ let sock = null
 let isConnected = false
 let connectedPhone = null
 
+function makeNoopLogger() {
+  const noop = () => {}
+  const logger = {
+    level: 'silent',
+    info: noop, warn: noop, error: noop,
+    debug: noop, trace: noop, fatal: noop,
+    child: () => makeNoopLogger(),
+  }
+  return logger
+}
+
 export function getStatus() {
   return { connected: isConnected, phone: connectedPhone }
 }
@@ -32,7 +43,7 @@ export async function startWhatsApp(onReady) {
     version,
     auth: state,
     printQRInTerminal: false,
-    logger: { level: 'silent', child: () => ({ level: 'silent', info: () => {}, warn: () => {}, error: () => {}, debug: () => {}, trace: () => {}, fatal: () => {}, child: () => ({}) }) },
+    logger: makeNoopLogger(),
   })
 
   sock.ev.on('creds.update', saveCreds)
