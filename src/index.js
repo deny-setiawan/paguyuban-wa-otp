@@ -1,6 +1,6 @@
 import Fastify from 'fastify'
 import QRCode from 'qrcode'
-import { startWhatsApp, getStatus, getLatestQr, sendMessage, reconnect } from './whatsapp.js'
+import { startWhatsApp, getStatus, getLatestQr, sendMessage, reconnect, getGroups } from './whatsapp.js'
 
 const PORT = Number(process.env.PORT) || 3001
 const INTERNAL_SECRET = process.env.INTERNAL_SECRET || ''
@@ -140,6 +140,31 @@ app.post('/send-otp', async (request, reply) => {
 
   const message = `Halo! Kode OTP Anda untuk login *Paguyuban PKR-Pepe*:\n\n*${otp}*\n\nBerlaku 5 menit. Jangan bagikan ke siapapun. 🔒`
 
+  try {
+    await sendMessage(jid, message)
+    return { ok: true }
+  } catch (err) {
+    app.log.error(err)
+    return reply.code(500).send({ ok: false, error: err.message })
+  }
+})
+
+// ── List WA Groups (protected) ────────────────────────────────────────────
+app.get('/groups', async (request, reply) => {
+  try {
+    const groups = await getGroups()
+    return { ok: true, groups }
+  } catch (err) {
+    return reply.code(500).send({ ok: false, error: err.message })
+  }
+})
+
+// ── Send arbitrary message (protected) ────────────────────────────────────
+app.post('/send-message', async (request, reply) => {
+  const { jid, message } = request.body
+  if (!jid || !message) {
+    return reply.code(400).send({ ok: false, error: 'jid dan message wajib diisi' })
+  }
   try {
     await sendMessage(jid, message)
     return { ok: true }

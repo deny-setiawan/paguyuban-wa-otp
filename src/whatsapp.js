@@ -48,6 +48,16 @@ export async function sendMessage(jid, text) {
   await sock.sendMessage(jid, { text })
 }
 
+export async function getGroups() {
+  if (!sock || !isConnected) throw new Error('WhatsApp belum terhubung')
+  const groups = await sock.groupFetchAllParticipating()
+  return Object.values(groups).map(g => ({
+    jid: g.id,
+    name: g.subject || g.id,
+    participantCount: g.participants?.length ?? 0,
+  }))
+}
+
 export async function reconnect() {
   // Close current socket
   if (sock) {
